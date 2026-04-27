@@ -1,0 +1,342 @@
+// data.js
+
+// data.js
+
+const Products = [
+  {
+    id: 1,
+    name: 'Running Sneaker 1',
+    price: 32000,
+    quantity: 12,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=1',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 2,
+    name: 'Casual Sneaker 2',
+    price: 41000,
+    new_hit: true,
+    quantity: 9,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=2',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 3,
+    name: 'Sport Sneaker 3',
+    price: 18000,
+    quantity: 20,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=3',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 4,
+    name: 'Air Sneaker 4',
+    price: 27000,
+    quantity: 15,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=4',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 5,
+    name: 'Classic Sneaker 5',
+    price: 35000,
+    quantity: 8,
+    new_hit: false,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=5',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 6,
+    name: 'Street Sneaker 6',
+    price: 16000,
+    quantity: 25,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=6',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 7,
+    name: 'Pro Sneaker 7',
+    price: 45000,
+    new_hit: true,
+    quantity: 7,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=7',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'XL'
+  },
+  {
+    id: 8,
+    name: 'Lite Sneaker 8',
+    price: 30000,
+    quantity: 13,
+    new_hit: false,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=8',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 9,
+    name: 'Flex Sneaker 9',
+    price: 14000,
+    quantity: 22,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=9',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 10,
+    name: 'Zoom Sneaker 10',
+    price: 38000,
+    quantity: 10,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=10',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 11,
+    name: 'Boost Sneaker 11',
+    price: 42000,
+    quantity: 6,
+    new_hit: false,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=11',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 12,
+    name: 'Play Sneaker 12',
+    price: 17000,
+    quantity: 18,
+    new_hit: false,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=12',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 13,
+    name: 'Urban Sneaker 13',
+    price: 29000,
+    quantity: 14,
+    new_hit: true,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=13',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 14,
+    name: 'Edge Sneaker 14',
+    price: 36000,
+    quantity: 11,
+    new_hit: true,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=14',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 15,
+    name: 'Jump Sneaker 15',
+    price: 15000,
+    quantity: 19,
+    new_hit: false,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=15',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 16,
+    name: 'Max Sneaker 16',
+    price: 47000,
+    quantity: 5,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=16',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'XL'
+  },
+  {
+    id: 17,
+    name: 'Nova Sneaker 17',
+    price: 33000,
+    quantity: 12,
+    new_hit: true,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=17',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 18,
+    name: 'Run Sneaker 18',
+    price: 19000,
+    quantity: 21,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=18',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 19,
+    name: 'Track Sneaker 19',
+    price: 31000,
+    quantity: 9,
+    new_hit: true,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=19',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 20,
+    name: 'Glow Sneaker 20',
+    price: 39000,
+    quantity: 8,
+    new_hit: true,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=20',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 21,
+    name: 'Mini Sneaker 21',
+    price: 16000,
+    quantity: 23,
+    new_hit: false,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=21',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 22,
+    name: 'Elite Sneaker 22',
+    price: 44000,
+    quantity: 6,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=22',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'XL'
+  },
+  {
+    id: 23,
+    name: 'Chic Sneaker 23',
+    price: 37000,
+    quantity: 10,
+    new_hit: true,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=23',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 24,
+    name: 'Fun Sneaker 24',
+    price: 18000,
+    quantity: 17,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=24',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 25,
+    name: 'Prime Sneaker 25',
+    price: 50000,
+    quantity: 4,
+    new_hit: false,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=25',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'XL'
+  },
+  {
+    id: 26,
+    name: 'Soft Sneaker 26',
+    price: 34000,
+    quantity: 13,
+    new_hit: false,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=26',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 27,
+    name: 'Kiddo Sneaker 27',
+    price: 15500,
+    quantity: 20,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=27',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  },
+  {
+    id: 28,
+    name: 'Speed Sneaker 28',
+    price: 42000,
+    quantity: 7,
+    new_hit: true,
+    category: 'men',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=28',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'L'
+  },
+  {
+    id: 29,
+    name: 'Vibe Sneaker 29',
+    price: 36000,
+    quantity: 9,
+    new_hit: true,
+    category: 'women',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=29',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'M'
+  },
+  {
+    id: 30,
+    name: 'Tiny Sneaker 30',
+    price: 17000,
+    quantity: 18,
+    new_hit: true,
+    category: 'kids',
+    image: 'https://loremflickr.com/300/300/sneaker?lock=30',
+    sizes: ['S', 'M', 'L', 'XL'],
+    defaultSize: 'S'
+  }
+]
+
+export default Products
+
+
+
+
