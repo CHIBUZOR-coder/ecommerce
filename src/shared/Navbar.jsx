@@ -44,15 +44,18 @@ const Navbar = () => {
 
       {/* Actions */}
       <div className="flex justify-between items-center gap-3">
-        <span>
+        <Link to={"/register"}>
           <IoPersonCircleOutline />
-        </span>
-        <div className="flex justify-center items-center h-4 w-4 rounded-full relative ">
+        </Link>
+        <Link
+          to={"/cart"}
+          className="flex justify-center items-center h-4 w-4 rounded-full relative "
+        >
           <MdOutlineShoppingBag className="text-white" />
           <span className=" font-semibold absolute top-[-10px] right-[-8px] text-white">
-          {cartCount && cartCount}
+            {cartCount && cartCount}
           </span>
-        </div>
+        </Link>
       </div>
     </div>
   );

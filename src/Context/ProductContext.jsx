@@ -87,7 +87,7 @@ const ProductProvider = ({ children }) => {
               ? {
                   ...item,
                   quantity: item.quantity + Number(quantity),
-                  size: size || item.size,
+                  size: size || item.defaultSize,
                 }
               : item,
           );
@@ -118,7 +118,7 @@ const ProductProvider = ({ children }) => {
     }
   };
 
-  const HandleUpdateCart = async (prod, size, quantity) => {
+  const HandleUpdateCart = async (prod, quantity) => {
     try {
       if (!isUser) {
         const storedCartItems =
@@ -131,7 +131,7 @@ const ProductProvider = ({ children }) => {
         if (existingCartItem) {
           const updatedCartItem = storedCartItems.map((item) =>
             parseInt(item?.id) === parseInt(prod?.id)
-              ? { ...item, size, quantity }
+              ? { ...item, quantity }
               : item,
           );
 
@@ -149,24 +149,24 @@ const ProductProvider = ({ children }) => {
     }
   };
 
-  const HandleDeleteCart = async (prod) => {
+  const HandleDeleteCart = async (id) => {
     try {
       if (!isUser) {
         const storedCartItems =
           JSON.parse(localStorage.getItem("cartItems")) || [];
 
         const existingCartItem = storedCartItems.find(
-          (item) => parseInt(item?.id) === parseInt(prod?.id),
+          (item) => parseInt(item?.id) === parseInt(id),
         );
 
         if (existingCartItem) {
           const updatedCartItem = storedCartItems.filter(
-            (item) => parseInt(item?.id) !== parseInt(prod?.id),
+            (item) => parseInt(item?.id) !== parseInt(id),
           );
 
           setCartItems(updatedCartItem);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItem));
-          toast.success("Item updated successfully!");
+          toast.success("Item Deleted successfully!");
         } else {
           toast.error("Item does not exist in cart!");
         }
@@ -186,6 +186,7 @@ const ProductProvider = ({ children }) => {
         cartCount,
         HandleDeleteCart,
         HandleUpdateCart,
+        CartItems,
       }}
     >
       {children}
