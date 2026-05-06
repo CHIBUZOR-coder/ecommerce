@@ -140,7 +140,7 @@ export default function Cart() {
               </table>
             </div>
 
-            {/* Footer */}
+            {/* Footer bbb */}
             <div className="flex justify-end items-center gap-6 mt-6 pt-4 border-t border-gray-200">
               <p className="text-gray-500">
                 Total:{" "}
