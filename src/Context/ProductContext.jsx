@@ -5,6 +5,12 @@ import { toast } from "react-toastify";
 const ProductContext = createContext();
 
 const ProductProvider = ({ children }) => {
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  useEffect(() => {
+    console.log("baseurl:", baseURL);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [products, setProducts] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [isUser, setIsUser] = useState(false);
@@ -14,8 +20,6 @@ const ProductProvider = ({ children }) => {
   );
 
   const [cartCount, setCartCount] = useState(0);
-
- 
 
   // useEffect(() => {
   //   console.log("prod:", products);
@@ -40,7 +44,7 @@ const ProductProvider = ({ children }) => {
 
   const HandleGetProduct = async () => {
     try {
-      const res = await fetch("http://localhost:8000/products", {
+      const res = await fetch(`${baseURL}products/`, {
         method: "GET",
       });
 
@@ -63,6 +67,7 @@ const ProductProvider = ({ children }) => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     HandleGetProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const AddToCart = async (prod, quantity, size) => {
@@ -180,7 +185,6 @@ const ProductProvider = ({ children }) => {
     }
   };
 
-  
   return (
     <ProductContext.Provider
       value={{
@@ -191,6 +195,7 @@ const ProductProvider = ({ children }) => {
         HandleDeleteCart,
         HandleUpdateCart,
         CartItems,
+        baseURL
       }}
     >
       {children}

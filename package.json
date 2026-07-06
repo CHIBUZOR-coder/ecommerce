@@ -11,6 +11,7 @@
     "watch": "npx json-server --watch data/db.json --port 8000"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "json-server": "^1.0.0-beta.15",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
