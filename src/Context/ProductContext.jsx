@@ -15,6 +15,8 @@ const ProductProvider = ({ children }) => {
 
   const [cartCount, setCartCount] = useState(0);
 
+ 
+
   // useEffect(() => {
   //   console.log("prod:", products);
   // }, [products]);
@@ -177,6 +179,8 @@ const ProductProvider = ({ children }) => {
       console.log(error);
     }
   };
+
+  
   return (
     <ProductContext.Provider
       value={{

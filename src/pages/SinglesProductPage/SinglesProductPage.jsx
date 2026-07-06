@@ -12,6 +12,9 @@ export default function SinglesProductPage() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
+
+  const sizes = ["S", "M", "L", "XL"];
+
   useEffect(() => {
     console.log("quant:", quantity);
     console.log("selected_size:", selectedSize);
