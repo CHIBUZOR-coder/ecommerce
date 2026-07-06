@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Layout from "../shared/Layout";
 import Input from "../shared/Input";
 import { toast } from "react-toastify";
+import { ProductContext } from "../Context/ProductContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const { baseURL, CartItems } = useContext(ProductContext);
+  const navigate = useNavigate();
   const [userData, setUserData] = useState({
     username: "", // ← Django uses email as username field
     password: "",
@@ -28,7 +32,7 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(`http://127.0.0.1:9000/store/login/`, {
+      const res = await fetch(`${baseURL}login/`, {
         method: "POST",
         // ← tell Django we're sending JSON
         headers: {
@@ -44,16 +48,43 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
+        console.log("data:", data);
+
         // Save tokens to localStorage
         // so future requests can attach them automatically
         localStorage.setItem("access_token", data.tokens.access);
         localStorage.setItem("refresh_token", data.tokens.refresh);
         localStorage.setItem("user", JSON.stringify(data.user));
 
+        if (CartItems?.length > 0) {
+          await Promise.all(
+            CartItems?.map(async (item) => {
+              const res = await fetch(`${baseURL}store/addCartItem/`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                },
+
+                body: JSON.stringify({
+                  product: item.id,
+                  quantity: item.quantity,
+                  size: item.size,
+                }),
+              });
+
+              const data = await res.json();
+              console.log("sync cart item response:", data);
+            }),
+          );
+
+          toast.success("Cart items synced successfully!");
+        }
+
         toast.success("Login successful!");
 
         // Redirect to home page
-        window.location.href = "/";
+        navigate("/");
       } else {
         // Django returns error in different shapes:
         // { detail: "Invalid email or password." }

@@ -72,56 +72,96 @@ const ProductProvider = ({ children }) => {
 
   const AddToCart = async (prod, quantity, size) => {
     try {
-      if (!isUser) {
-        //get the local cart
-        let storedCartItems =
-          JSON.parse(localStorage.getItem("cartItems")) || []; //localStorage Cart
-        let updatedCartItems;
+      // Check if user is logged in by looking for access token
+      const token = localStorage.getItem("access_token");
 
-        //find existing cart
-        const existingCartItems = storedCartItems.find(
+      if (!token) {
+        // =============================================
+        // GUEST USER — store cart in localStorage
+        // No account needed, cart lives in the browser
+        // =============================================
+
+        // 1. Get existing cart from localStorage
+        // If nothing stored yet, start with empty array
+        let storedCartItems =
+          JSON.parse(localStorage.getItem("cartItems")) || [];
+
+        // 2. Check if this exact product+size combination already exists in cart
+        // We check BOTH id AND size because:
+        // Same product in size M and size L = two different cart items!
+        const existingItem = storedCartItems.find(
           (item) =>
             parseInt(item.id) === parseInt(prod.id) && item.size === size,
         );
 
-        if (existingCartItems) {
-          //add quantity if  existing
-
-          console.log("exsit:", existingCartItems);
-
-          updatedCartItems = storedCartItems.map((item) =>
-            parseInt(item.id) === parseInt(prod.id)
+        if (existingItem) {
+          // 3A. Product+size already in cart → just increase quantity
+          const updatedCartItems = storedCartItems.map((item) =>
+            parseInt(item.id) === parseInt(prod.id) && item.size === size
               ? {
                   ...item,
                   quantity: item.quantity + Number(quantity),
-                  size: size || item.defaultSize,
                 }
               : item,
           );
+
           setCartItems(updatedCartItems);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
-          toast.info("Item quantity added");
+          toast.info("Item quantity updated!");
         } else {
-          //Add new product
-
-          updatedCartItems = [
+          // 3B. New product+size combination → add as new cart item
+          const updatedCartItems = [
             ...storedCartItems,
             {
               ...prod,
               quantity: Number(quantity),
-              size: size || prod.size,
+              size: size || prod.defaultSize,
             },
           ];
 
           setCartItems(updatedCartItems);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
-          toast.success("Item added to cart Successfully");
+          toast.success("Item added to cart!");
         }
       } else {
-        console.log("this is a user");
+        // =============================================
+        // LOGGED IN USER — send to Django backend
+        // Cart lives in the database, not localStorage
+        // =============================================
+
+        const res = await fetch("http://127.0.0.1:9000/store/addCartItem/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Attach JWT token so Django knows who this user is
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            product: prod.id,
+            quantity: Number(quantity),
+            size: size || prod.defaultSize,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          toast.success("Item added to cart!");
+          // Optionally update local cart state with server response
+          console.log("cart item:", data.cart_item);
+        } else {
+          // Django returns errors like:
+          // "Cannot add 2 more items. Stock is only 3."
+          const message =
+            data?.detail ||
+            data?.non_field_errors?.[0] ||
+            "Failed to add item to cart.";
+          toast.error(message);
+        }
       }
     } catch (error) {
-      console.log(error);
+      console.log("AddToCart error:", error.message);
+      toast.error("Something went wrong. Try again.");
     }
   };
 

@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import Layout from "../shared/Layout";
 import Input from "../shared/Input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ProductContext } from "../Context/ProductContext";
 
 const Register = () => {
   const { baseURL } = useContext(ProductContext);
+  const navigate = useNavigate();
   const [userData, setUserData] = useState({
     email: "",
     name: "",
@@ -88,7 +89,7 @@ const Register = () => {
         toast.success(
           "Registration successful! Check your email to verify your account.",
         );
-        window.location.href = "/login";
+        navigate("/login");
       } else {
         // Django returns different error shapes — check each one
         const message =
