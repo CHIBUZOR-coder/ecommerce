@@ -6,7 +6,7 @@ import { ProductContext } from "../Context/ProductContext";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const { baseURL, CartItems } = useContext(ProductContext);
+  const { baseURL, CartItems, applyCartFromBackend } = useContext(ProductContext);
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
     username: "", // ← Django uses email as username field
@@ -57,27 +57,25 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
 
         if (CartItems?.length > 0) {
-          await Promise.all(
-            CartItems?.map(async (item) => {
-              const res = await fetch(`${baseURL}store/addCartItem/`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                },
-
-                body: JSON.stringify({
-                  product: item.id,
-                  quantity: item.quantity,
-                  size: item.size,
-                }),
-              });
-
-              const data = await res.json();
-              console.log("sync cart item response:", data);
-            }),
-          );
-
+          let lastData = null;
+          for (const item of CartItems) {
+            const syncRes = await fetch(`${baseURL}addCartItem/`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              },
+              body: JSON.stringify({
+                product: item.id,
+                quantity: item.quantity,
+                size: item.size,
+              }),
+            });
+            lastData = await syncRes.json();
+          }
+          if (lastData?.cart?.items) {
+            applyCartFromBackend(lastData.cart.items);
+          }
           toast.success("Cart items synced successfully!");
         }
 

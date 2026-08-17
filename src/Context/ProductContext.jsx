@@ -15,9 +15,14 @@ const ProductProvider = ({ children }) => {
   // eslint-disable-next-line no-unused-vars
   const [isUser, setIsUser] = useState(false);
 
-  const [CartItems, setCartItems] = useState(
-    JSON.parse(localStorage.getItem("cartItems")) || [],
-  );
+  const [CartItems, setCartItems] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const valid = stored.filter((item) => item.name && item.price != null);
+    if (valid.length !== stored.length) {
+      localStorage.setItem("cartItems", JSON.stringify(valid));
+    }
+    return valid;
+  });
 
   const [cartCount, setCartCount] = useState(0);
 
@@ -51,9 +56,17 @@ const ProductProvider = ({ children }) => {
       const data = await res.json();
       console.log("data:", data);
       if (res.ok) {
-        console.log("data:", data);
-
-        setProducts(data);
+        const fixImage = (url) => {
+          if (!url) return url;
+          const embedded = url.match(/\/media\/(https?:\/\/.+)$/);
+          if (embedded) return decodeURIComponent(embedded[1]);
+          return url;
+        };
+        const normalized = data.map((p) => ({
+          ...p,
+          image: fixImage(p.image),
+        }));
+        setProducts(normalized);
         toast.success("Products fetched successfully!");
       } else {
         console.log("Something went wrong!");
@@ -70,70 +83,74 @@ const ProductProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (products.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCartItems((prevItems) => {
+      if (prevItems.length === 0) return prevItems;
+      const refreshed = prevItems.map((item) => {
+        const fresh = products.find(
+          (p) => parseInt(p.id) === parseInt(item.id),
+        );
+        return fresh
+          ? { ...fresh, quantity: item.quantity, size: item.size }
+          : item;
+      });
+      const changed = refreshed.some((r, i) => r.image !== prevItems[i]?.image);
+      if (changed) {
+        localStorage.setItem("cartItems", JSON.stringify(refreshed));
+        return refreshed;
+      }
+      return prevItems;
+    });
+  }, [products]);
+  const token = localStorage.getItem("access_token");
+
+  const applyCartFromBackend = (items) => {
+    const cart = items.map((item) => ({
+      ...item.product,
+      quantity: item.quantity,
+      size: item.size,
+      cartItemId: item.id,
+    }));
+    setCartItems(cart);
+    localStorage.setItem("cartItems", JSON.stringify(cart));
+  };
+
   const AddToCart = async (prod, quantity, size) => {
     try {
-      // Check if user is logged in by looking for access token
-      const token = localStorage.getItem("access_token");
-
       if (!token) {
-        // =============================================
-        // GUEST USER — store cart in localStorage
-        // No account needed, cart lives in the browser
-        // =============================================
-
-        // 1. Get existing cart from localStorage
-        // If nothing stored yet, start with empty array
         let storedCartItems =
           JSON.parse(localStorage.getItem("cartItems")) || [];
 
-        // 2. Check if this exact product+size combination already exists in cart
-        // We check BOTH id AND size because:
-        // Same product in size M and size L = two different cart items!
         const existingItem = storedCartItems.find(
           (item) =>
             parseInt(item.id) === parseInt(prod.id) && item.size === size,
         );
 
         if (existingItem) {
-          // 3A. Product+size already in cart → just increase quantity
           const updatedCartItems = storedCartItems.map((item) =>
             parseInt(item.id) === parseInt(prod.id) && item.size === size
-              ? {
-                  ...item,
-                  quantity: item.quantity + Number(quantity),
-                }
+              ? { ...item, quantity: item.quantity + Number(quantity) }
               : item,
           );
-
           setCartItems(updatedCartItems);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
           toast.info("Item quantity updated!");
         } else {
-          // 3B. New product+size combination → add as new cart item
           const updatedCartItems = [
             ...storedCartItems,
-            {
-              ...prod,
-              quantity: Number(quantity),
-              size: size || prod.defaultSize,
-            },
+            { ...prod, quantity: Number(quantity), size: size || prod.defaultSize },
           ];
-
           setCartItems(updatedCartItems);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
           toast.success("Item added to cart!");
         }
       } else {
-        // =============================================
-        // LOGGED IN USER — send to Django backend
-        // Cart lives in the database, not localStorage
-        // =============================================
-
-        const res = await fetch("http://127.0.0.1:9000/store/addCartItem/", {
+        const res = await fetch(`${baseURL}addCartItem/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Attach JWT token so Django knows who this user is
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -147,16 +164,9 @@ const ProductProvider = ({ children }) => {
 
         if (res.ok) {
           toast.success("Item added to cart!");
-          // Optionally update local cart state with server response
-          console.log("cart item:", data.cart_item);
+          applyCartFromBackend(data.cart.items);
         } else {
-          // Django returns errors like:
-          // "Cannot add 2 more items. Stock is only 3."
-          const message =
-            data?.detail ||
-            data?.non_field_errors?.[0] ||
-            "Failed to add item to cart.";
-          toast.error(message);
+          toast.error(data?.detail || "Failed to add item to cart.");
         }
       }
     } catch (error) {
@@ -165,40 +175,9 @@ const ProductProvider = ({ children }) => {
     }
   };
 
-  const HandleUpdateCart = async (prod, quantity) => {
-    try {
-      if (!isUser) {
-        const storedCartItems =
-          JSON.parse(localStorage.getItem("cartItems")) || [];
-
-        const existingCartItem = storedCartItems.find(
-          (item) => parseInt(item?.id) === parseInt(prod?.id),
-        );
-
-        if (existingCartItem) {
-          const updatedCartItem = storedCartItems.map((item) =>
-            parseInt(item?.id) === parseInt(prod?.id)
-              ? { ...item, quantity }
-              : item,
-          );
-
-          setCartItems(updatedCartItem);
-          localStorage.setItem("cartItems", JSON.stringify(updatedCartItem));
-          toast.success("Item updated successfully!");
-        } else {
-          toast.error("Item does not exist in cart!");
-        }
-      } else {
-        console.log("Is uaser");
-      }
-    } catch (error) {
-      console.log("error:", error.message);
-    }
-  };
-
   const HandleDeleteCart = async (id) => {
     try {
-      if (!isUser) {
+      if (!token) {
         const storedCartItems =
           JSON.parse(localStorage.getItem("cartItems")) || [];
 
@@ -210,7 +189,6 @@ const ProductProvider = ({ children }) => {
           const updatedCartItem = storedCartItems.filter(
             (item) => parseInt(item?.id) !== parseInt(id),
           );
-
           setCartItems(updatedCartItem);
           localStorage.setItem("cartItems", JSON.stringify(updatedCartItem));
           toast.success("Item Deleted successfully!");
@@ -218,7 +196,24 @@ const ProductProvider = ({ children }) => {
           toast.error("Item does not exist in cart!");
         }
       } else {
-        console.log("this is a user");
+        const res = await fetch(
+          `${baseURL}decrementCartItem/${parseInt(id)}/`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        const data = await res.json();
+
+        if (res.ok) {
+          toast.success("Item Deleted successfully!");
+          applyCartFromBackend(data.cart.items);
+        } else {
+          toast.error(data?.detail || "Failed to delete item.");
+        }
       }
     } catch (error) {
       console.log(error);
@@ -233,9 +228,10 @@ const ProductProvider = ({ children }) => {
         HandleGetProduct,
         cartCount,
         HandleDeleteCart,
-        HandleUpdateCart,
+        applyCartFromBackend,
+        token,
         CartItems,
-        baseURL
+        baseURL,
       }}
     >
       {children}

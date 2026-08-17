@@ -1,0 +1,53 @@
+cart_item
+: 
+id
+: 
+26
+product
+: 
+category
+: 
+3
+defaultSize
+: 
+"S"
+id
+: 
+19
+image
+: 
+"https://res.cloudinary.com/dgyvs3zth/image/upload/v1/media/https://loremflickr.com/300/300/sneaker%3Flock%3D18"
+name
+: 
+"Run Sneaker 18"
+new_hit
+: 
+true
+price
+: 
+"19000.00"
+quantity
+: 
+100
+[[Prototype]]
+: 
+Object
+quantity
+: 
+1
+size
+: 
+"S"
+[[Prototype]]
+: 
+Object
+message
+: 
+"Item successfully updated in your cart."
+[[Prototype]]
+: 
+Object
+ProductContext.jsx:33 cartItems: 
+(3) [{…}, {…}, {…}]
+ProductContext.jsx:47 count: 106
+﻿

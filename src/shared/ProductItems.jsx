@@ -30,7 +30,7 @@ const ProductItems = ({ products }) => {
 
                   <span
                     onClick={() => {
-                      AddToCart(item, 1);
+                      AddToCart(item, 1, item?.defaultSize);
                     }}
                     className=" bg-white text-black rounded-full w-8 h-8 p-2 flex justify-center items-center cursor-pointer"
                   >

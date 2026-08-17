@@ -2,9 +2,8 @@ import { useContext, useEffect, useState } from "react";
 import Layout from "../shared/Layout";
 import { ProductContext } from "../Context/ProductContext";
 
-
 export default function Cart() {
-  const { HandleUpdateCart, CartItems, HandleDeleteCart } =
+  const { AddToCart, CartItems, HandleDeleteCart, token } =
     useContext(ProductContext);
   const [Total, setTotal] = useState(null);
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function Cart() {
                       {/* Size */}
                       <td className="py-3 px-4 text-center">
                         <span className="border border-gray-200 rounded px-2 py-0.5 text-xs text-gray-500">
-                          {item.defaultSize}
+                          {item.size || item.defaultSize}
                         </span>
                       </td>
 
@@ -87,7 +86,11 @@ export default function Cart() {
                         <div className="inline-flex items-center border border-gray-200 rounded-lg overflow-hidden">
                           <button
                             onClick={() =>
-                              HandleUpdateCart(item, Number(item.quantity - 1))
+                              HandleDeleteCart(
+                                token
+                                  ? Number(item?.cartItemId)
+                                  : Number(item.id),
+                              )
                             }
                             className="w-7 h-7 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
                           >
@@ -98,7 +101,7 @@ export default function Cart() {
                           </span>
                           <button
                             onClick={() =>
-                              HandleUpdateCart(item, Number(item.quantity) + 1)
+                              AddToCart(item, Number(item.quantity) + 1)
                             }
                             className="w-7 h-7 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
                           >
@@ -115,7 +118,11 @@ export default function Cart() {
                       {/* Delete */}
                       <td className="py-3 text-center">
                         <button
-                          onClick={() => HandleDeleteCart(item.id)}
+                          onClick={() =>
+                            HandleDeleteCart(
+                              token ? item.cartItemId : item.id,
+                            )
+                          }
                           className="text-red-400 hover:text-red-600 transition-colors p-1"
                         >
                           <svg
