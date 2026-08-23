@@ -6,7 +6,7 @@ import { ProductContext } from "../Context/ProductContext";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const { baseURL, CartItems, applyCartFromBackend } = useContext(ProductContext);
+  const { baseURL, CartItems, applyCartFromBackend, HandleGetCart } = useContext(ProductContext);
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
     username: "", // ← Django uses email as username field
@@ -77,6 +77,8 @@ const Login = () => {
             applyCartFromBackend(lastData.cart.items);
           }
           toast.success("Cart items synced successfully!");
+        } else {
+          await HandleGetCart();
         }
 
         toast.success("Login successful!");
