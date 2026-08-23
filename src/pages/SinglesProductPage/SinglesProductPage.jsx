@@ -20,33 +20,31 @@ export default function SinglesProductPage() {
     console.log("selected_size:", selectedSize);
   }, [quantity, selectedSize]);
 
+  // When the product loads, pre-select its default size so the user doesn't have to pick one
   useEffect(() => {
     console.log("selected:", selected);
     if (singleProduct) {
-      // console.log("single:", singleProduct);
       console.log("size:", singleProduct.defaultSize);
-
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelected(singleProduct.defaultSize);
       setSelectedSize(singleProduct.defaultSize);
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singleProduct]);
 
+  // If the products list is empty (e.g. user lands directly on this URL), fetch them
   useEffect(() => {
     if (!products.length > 0) {
       HandleGetProduct();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
+
+  // Once products are available, find the one matching the id in the URL
   useEffect(() => {
     if (products && products.length > 0) {
       const found = products.find((item) => parseInt(item?.id) === parseInt(id));
- 
       console.log("found:", found);
-      
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSingleProduct(found);
     }

@@ -57,6 +57,8 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
 
         if (CartItems?.length > 0) {
+          // User had items in their guest cart — push each one to the backend so nothing is lost.
+          // We loop sequentially and keep only the last response, which contains the full cart.
           let lastData = null;
           for (const item of CartItems) {
             const syncRes = await fetch(`${baseURL}addCartItem/`, {
@@ -73,11 +75,13 @@ const Login = () => {
             });
             lastData = await syncRes.json();
           }
+          // Replace local state with the backend's authoritative cart (includes cartItemIds)
           if (lastData?.cart?.items) {
             applyCartFromBackend(lastData.cart.items);
           }
           toast.success("Cart items synced successfully!");
         } else {
+          // No guest cart — just load whatever the backend already has for this account
           await HandleGetCart();
         }
 

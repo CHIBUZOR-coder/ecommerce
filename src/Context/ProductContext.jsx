@@ -10,8 +10,11 @@ const ProductProvider = ({ children }) => {
   const [isUser, setIsUser] = useState(false);
 
   const [CartItems, setCartItems] = useState(() => {
+    // Lazy initializer — runs once on mount to hydrate cart from localStorage
     const stored = JSON.parse(localStorage.getItem("cartItems")) || [];
+    // Strip any corrupted entries that are missing required fields
     const valid = stored.filter((item) => item.name && item.price != null);
+    // If we dropped any bad entries, write the clean version back
     if (valid.length !== stored.length) {
       localStorage.setItem("cartItems", JSON.stringify(valid));
     }
@@ -20,8 +23,10 @@ const ProductProvider = ({ children }) => {
 
   const [cartCount, setCartCount] = useState(0);
 
+  // Recalculate the cart badge count whenever the cart changes
   useEffect(() => {
     if (CartItems) {
+      // Sum all quantities across every line item (e.g. 2 shoes + 3 shirts = badge shows 5)
       const totalCartItem = CartItems?.reduce(
         (acc, curr) => acc + curr?.quantity,
         0,
@@ -35,12 +40,15 @@ const ProductProvider = ({ children }) => {
       const res = await fetch(`${baseURL}products/`, { method: "GET" });
       const data = await res.json();
       if (res.ok) {
+        // Cloudinary sometimes embeds the real URL inside a /media/ path.
+        // This helper unwraps it so <img src> always gets a direct Cloudinary URL.
         const fixImage = (url) => {
           if (!url) return url;
           const embedded = url.match(/\/media\/(https?:\/\/.+)$/);
           if (embedded) return decodeURIComponent(embedded[1]);
           return url;
         };
+        // Apply the image fix to every product before storing in state
         const normalized = data.map((p) => ({ ...p, image: fixImage(p.image) }));
         setProducts(normalized);
         toast.success("Products fetched successfully!");
@@ -56,14 +64,19 @@ const ProductProvider = ({ children }) => {
     HandleGetProduct();
   }, []);
 
+  // After products load, refresh cart item data (e.g. updated images from Cloudinary)
+  // while preserving the user's chosen quantity and size
   useEffect(() => {
     if (products.length === 0) return;
     setCartItems((prevItems) => {
       if (prevItems.length === 0) return prevItems;
       const refreshed = prevItems.map((item) => {
+        // Find the latest version of this product from the fetched list
         const fresh = products.find((p) => parseInt(p.id) === parseInt(item.id));
+        // Merge fresh product data but keep the cart-specific fields the user set
         return fresh ? { ...fresh, quantity: item.quantity, size: item.size } : item;
       });
+      // Only trigger a re-render and localStorage write if something actually changed
       const changed = refreshed.some((r, i) => r.image !== prevItems[i]?.image);
       if (changed) {
         localStorage.setItem("cartItems", JSON.stringify(refreshed));
@@ -75,20 +88,26 @@ const ProductProvider = ({ children }) => {
 
   const token = localStorage.getItem("access_token");
 
+  // Converts the backend cart shape into the flat shape the frontend expects,
+  // then syncs both React state and localStorage in one call
   const applyCartFromBackend = (items) => {
     const cart = items.map((item) => ({
+      // Spread the nested product fields (name, price, image, etc.) to the top level
       ...item.product,
       quantity: item.quantity,
       size: item.size,
+      // cartItemId is the backend's ID for this cart line — needed by decrement and remove endpoints
       cartItemId: item.id,
     }));
     setCartItems(cart);
     localStorage.setItem("cartItems", JSON.stringify(cart));
   };
 
-  // GET /store/getcart/
+  // GET /store/getcart/ — loads the backend cart into React state
   const HandleGetCart = async () => {
     try {
+      // Re-read token from localStorage here (not from the module-level const)
+      // because the token may not exist yet when this module first loads
       const currentToken = localStorage.getItem("access_token");
       if (!currentToken) return;
 
@@ -99,6 +118,7 @@ const ProductProvider = ({ children }) => {
 
       const data = await res.json();
       if (res.ok) {
+        // Replace frontend cart with whatever the backend says is in the cart
         applyCartFromBackend(data.items);
       }
     } catch (error) {
@@ -202,18 +222,22 @@ const ProductProvider = ({ children }) => {
       return;
     }
 
-    // Optimistic update for authenticated users
+    // Snapshot current cart so we can roll back if the server rejects the request
     const prevItems = CartItems;
+    // Find the cart line being decremented using the backend's cart item ID
     const target = CartItems.find((item) => parseInt(item.cartItemId) === parseInt(id));
     if (target) {
       const optimistic =
+        // If quantity is 1, removing one more means the line disappears entirely
         target.quantity <= 1
           ? CartItems.filter((item) => parseInt(item.cartItemId) !== parseInt(id))
+          // Otherwise just subtract 1 from that line's quantity
           : CartItems.map((item) =>
               parseInt(item.cartItemId) === parseInt(id)
                 ? { ...item, quantity: item.quantity - 1 }
                 : item,
             );
+      // Update UI immediately before the API call
       setCartItems(optimistic);
     }
 
@@ -224,8 +248,10 @@ const ProductProvider = ({ children }) => {
       });
       const data = await res.json();
       if (res.ok) {
+        // Replace optimistic state with the authoritative backend response
         applyCartFromBackend(data.cart.items);
       } else {
+        // Revert the optimistic update if the server rejected it
         setCartItems(prevItems);
         toast.error(data?.detail || "Failed to update cart.");
       }
@@ -246,8 +272,9 @@ const ProductProvider = ({ children }) => {
       return;
     }
 
-    // Optimistic update for authenticated users
+    // Snapshot current cart so we can roll back if the server rejects the request
     const prevItems = CartItems;
+    // Remove the entire line instantly — UI updates before the API call fires
     setCartItems(CartItems.filter((item) => item.cartItemId !== cartItemId));
     toast.success("Item removed from cart!");
 
@@ -258,8 +285,10 @@ const ProductProvider = ({ children }) => {
       });
       const data = await res.json();
       if (res.ok) {
+        // Replace optimistic state with the authoritative backend response
         applyCartFromBackend(data.cart.items);
       } else {
+        // Revert: put the item back if the server rejected the delete
         setCartItems(prevItems);
         toast.error(data?.detail || "Failed to remove item.");
       }
@@ -270,20 +299,23 @@ const ProductProvider = ({ children }) => {
     }
   };
 
+  // Wipes the cart from both React state and localStorage — called after payment is verified
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem("cartItems");
   };
 
-  // POST /store/checkout/
+  // POST /store/checkout/ — creates an order on the backend and redirects to Flutterwave
   const HandleCheckout = async (navigate) => {
     try {
+      // Guest users can't checkout — they have no backend cart
       if (!token) {
         toast.error("Please log in to checkout.");
         navigate("/login");
         return false;
       }
 
+      // Tell the backend to convert the cart into a pending order
       const res = await fetch(`${baseURL}checkout/`, {
         method: "POST",
         headers: {
@@ -295,10 +327,12 @@ const ProductProvider = ({ children }) => {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        // Backend returned a Flutterwave payment link — hand off the browser to it
+        // Cart is NOT cleared here; it's cleared only after payment is verified
         window.location.href = data.link;
         return true;
       } else if (res.status === 400) {
-        // Cart is empty on backend — sync frontend to match
+        // Backend says cart is empty — frontend state is stale, pull the real cart
         await HandleGetCart();
         toast.error("Your cart is empty. Please add items before checking out.");
         return false;

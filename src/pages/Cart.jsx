@@ -10,12 +10,15 @@ export default function Cart() {
   const [Total, setTotal] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  // On mount, pull the latest cart from the backend for logged-in users.
+  // This prevents stale frontend state from causing a 400 "cart is empty" on checkout.
   useEffect(() => {
     if (token) {
       HandleGetCart();
     }
   }, []);
 
+  // Recalculate the order total whenever cart items change
   useEffect(() => {
     const total = CartItems.reduce(
       (sum, item) => sum + Number(item.price) * Number(item.quantity),
@@ -27,9 +30,11 @@ export default function Cart() {
   }, [CartItems]);
 
   const handleCheckoutClick = async () => {
+    // Show the Flutterwave redirect overlay immediately
     setCheckoutLoading(true);
     const success = await HandleCheckout(navigate);
     if (!success) {
+      // Hide the overlay if checkout failed so the user can try again
       setCheckoutLoading(false);
     }
     // On success, window.location.href redirects away — no need to reset

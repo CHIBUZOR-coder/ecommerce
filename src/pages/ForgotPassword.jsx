@@ -18,6 +18,7 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
+      // POST the email to the backend — it will send the reset link if the account exists
       const res = await fetch(`${baseURL}password-reset/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,6 +26,8 @@ const ForgotPassword = () => {
       });
 
       await res.json();
+      // Always show the success message regardless of whether the email was found.
+      // This prevents attackers from discovering which emails are registered (enumeration attack).
       setSent(true);
       toast.success("If that email exists, a reset link has been sent.");
     } catch {

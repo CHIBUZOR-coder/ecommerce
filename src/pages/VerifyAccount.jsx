@@ -10,9 +10,11 @@ const VerifyAccount = () => {
   const [status, setStatus] = useState("verifying");
 
   useEffect(() => {
+    // 1. Extract uid and token that Django embedded in the verification email link
     const uid = searchParams.get("uid");
     const token = searchParams.get("token");
 
+    // 2. If either is missing the URL is malformed — show error immediately
     if (!uid || !token) {
       setStatus("error");
       return;
@@ -20,6 +22,8 @@ const VerifyAccount = () => {
 
     const verify = async () => {
       try {
+        // 3. POST both values to Django — it decodes the uid, finds the user,
+        //    and checks the token signature before marking the account as verified
         const res = await fetch(`${baseURL}verify/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -31,8 +35,10 @@ const VerifyAccount = () => {
         if (res.ok) {
           setStatus("success");
           toast.success(data.message || "Account verified!");
+          // 4. Give the user 2 seconds to read the success message, then redirect to login
           setTimeout(() => navigate("/login"), 2000);
         } else {
+          // Token is expired or already used
           setStatus("error");
           toast.error(data.detail || "Verification failed.");
         }

@@ -11,6 +11,7 @@ const ResetPassword = () => {
   const [passwords, setPasswords] = useState({ new_password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
 
+  // Keeps the passwords state in sync as the user types in either field
   const HandleChange = (e) => {
     const { name, value } = e.target;
     setPasswords((prev) => ({ ...prev, [name]: value }));
@@ -18,15 +19,18 @@ const ResetPassword = () => {
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
+    // 1. Ensure both fields are filled before sending anything to the server
     if (!passwords.new_password || !passwords.confirm) {
       toast.error("Please fill in all fields.");
       return;
     }
+    // 2. Client-side match check to give instant feedback without a round trip
     if (passwords.new_password !== passwords.confirm) {
       toast.error("Passwords do not match.");
       return;
     }
 
+    // 3. Read uid and token that Flutterwave put in the URL when they clicked the email link
     const uid = searchParams.get("uid");
     const token = searchParams.get("token");
     if (!uid || !token) {
@@ -36,6 +40,7 @@ const ResetPassword = () => {
 
     try {
       setLoading(true);
+      // 4. Send uid, token, and the new password to the backend for verification and update
       const res = await fetch(`${baseURL}password-reset-confirm/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -47,6 +52,7 @@ const ResetPassword = () => {
         toast.success("Password reset successful! Please log in.");
         navigate("/login");
       } else {
+        // Backend rejects if token is expired or already used
         toast.error(data?.detail || "Reset failed. Link may have expired.");
       }
     } catch {
